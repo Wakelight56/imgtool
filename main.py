@@ -156,7 +156,9 @@ class ImageOperation:
         else:
             return process_image(img)
     
-    def _limit_image_by_pixels(self, img, max_pixels):
+    def _limit_image_by_pixels(self, img, max_pixels=None):
+        if max_pixels is None:
+            max_pixels = self.image_max_size
         if isinstance(img, list):
             return [self._limit_image_by_pixels(i, max_pixels) for i in img]
         w, h = img.size
@@ -413,14 +415,29 @@ class Main(Star):
         if not os.path.exists(self.data_dir):
             os.makedirs(self.data_dir, exist_ok=True)
         
+        # 读取配置
+        self.config = config
+        self.image_max_size = self.config.get("image_max_size", 16777216)
+        self.gallery_max_images = self.config.get("gallery_max_images", 1000)
+        self.screenshot_timeout = self.config.get("screenshot_timeout", 30)
+        self.thumbnail_size = self.config.get("thumbnail_size", 64)
+        self.image_clean_interval = self.config.get("image_clean_interval", 3600)
+        self.multi_image_max_num = self.config.get("multi_image_max_num", 10)
+        self.duplicate_threshold = self.config.get("duplicate_threshold", 1000)
+        self.enable_screenshot = self.config.get("enable_screenshot", True)
+        
         # 初始化画廊管理器
         self.gallery_manager = GalleryManager.get(self.data_dir)
         
         # 运行时属性
         self.image_list = {}
         self.image_list_edit_time = {}
-        self.IMAGE_LIST_CLEAN_INTERVAL_SECONDS = 3600  # 1小时
-        self.MULTI_IMAGE_MAX_NUM = 10
+        self.IMAGE_LIST_CLEAN_INTERVAL_SECONDS = self.image_clean_interval
+        self.MULTI_IMAGE_MAX_NUM = self.multi_image_max_num
+        
+        # 更新所有图片操作的输入限制
+        for op in ImageOperation.all_ops.values():
+            op.input_limit = self.image_max_size
 
     async def initialize(self):
         """初始化插件"""
@@ -444,6 +461,9 @@ class Main(Star):
 
     async def _screenshot_image(self, image_path):
         """使用 playwright 截图图片"""
+        if not self.enable_screenshot:
+            return image_path
+        
         import uuid
         async with async_playwright() as p:
             browser = await p.chromium.launch()
@@ -470,7 +490,7 @@ class Main(Star):
             # 打开临时 HTML 文件
             await page.goto(f"file://{temp_html_path}")
             # 等待图片加载
-            await page.wait_for_load_state('networkidle')
+            await page.wait_for_load_state('networkidle', timeout=self.screenshot_timeout * 1000)
             # 生成唯一的临时文件名
             temp_screenshot_path = os.path.join(self.data_dir, f"temp_screenshot_{uuid.uuid4()}.png")
             # 截图并保存到临时文件

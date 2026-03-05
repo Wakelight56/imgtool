@@ -1,0 +1,50 @@
+{
+  "image_max_size": {
+    "description": "图片最大尺寸（像素）",
+    "type": "int",
+    "hint": "设置图片处理时的最大尺寸，超过此尺寸的图片会被缩放",
+    "default": 16777216
+  },
+  "gallery_max_images": {
+    "description": "画廊最大图片数",
+    "type": "int",
+    "hint": "每个画廊最多可以存储的图片数量",
+    "default": 1000
+  },
+  "screenshot_timeout": {
+    "description": "截图超时时间（秒）",
+    "type": "int",
+    "hint": "使用 playwright 截图时的超时时间",
+    "default": 30
+  },
+  "thumbnail_size": {
+    "description": "缩略图尺寸",
+    "type": "int",
+    "hint": "画廊图片的缩略图尺寸",
+    "default": 64
+  },
+  "image_clean_interval": {
+    "description": "图片清理间隔（秒）",
+    "type": "int",
+    "hint": "清理临时图片的时间间隔",
+    "default": 3600
+  },
+  "multi_image_max_num": {
+    "description": "多图片处理最大数量",
+    "type": "int",
+    "hint": "一次处理的最大图片数量",
+    "default": 10
+  },
+  "duplicate_threshold": {
+    "description": "图片重复检测阈值",
+    "type": "int",
+    "hint": "图片重复检测的阈值，值越小检测越严格",
+    "default": 1000
+  },
+  "enable_screenshot": {
+    "description": "启用截图功能",
+    "type": "bool",
+    "hint": "是否启用 playwright 截图功能",
+    "default": true
+  }
+}
