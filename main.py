@@ -527,7 +527,7 @@ class Main(Star):
         
         # 这里需要根据AstrBot的API来发送图片
         # 暂时使用简单的方式
-        await event.reply(ImageComponent(buffer.getvalue()))
+        await event.send(MessageChain([ImageComponent(buffer.getvalue())]))
 
     async def _operate_image(self, event: AstrMessageEvent, args: List[str]):
         """执行图片操作"""
@@ -800,7 +800,7 @@ class Main(Star):
                         # 使用 playwright 截图
                         temp_screenshot_path = await self._screenshot_image(pic.path)
                         # 发送图片
-                        await event.reply(ImageComponent(temp_screenshot_path))
+                        await event.send(MessageChain([ImageComponent(temp_screenshot_path)]))
                         # 删除临时文件
                         if os.path.exists(temp_screenshot_path):
                             os.remove(temp_screenshot_path)
