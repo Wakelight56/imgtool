@@ -5,8 +5,6 @@ import random
 from pathlib import Path
 from typing import Any, List, Union
 
-from astrbot.core.utils.astrbot_path import get_astrbot_data_path
-
 from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.event.filter import (
@@ -408,14 +406,8 @@ class Main(Star):
         
         # 初始化插件配置
         self.base_dir = Path(__file__).parent
-        # 使用官方推荐的插件数据目录
-        astrbot_data_path = get_astrbot_data_path()
-        # 确保使用Path对象
-        if isinstance(astrbot_data_path, str):
-            astrbot_data_path = Path(astrbot_data_path)
-        plugin_data_path = astrbot_data_path / "plugin_data" / self.name
-        self.data_dir = plugin_data_path
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.data_dir = self.base_dir / "data"
+        self.data_dir.mkdir(exist_ok=True)
         
         # 初始化画廊管理器
         self.gallery_manager = GalleryManager.get(self.data_dir)
