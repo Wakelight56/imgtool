@@ -42,28 +42,50 @@
 - **numpy**：数值计算库
 - **aiohttp**：异步HTTP客户端
 - **playwright**：网页截图库（用于截图画廊图片）
+- **nonebot2[fastapi]**：NoneBot2框架
+- **nonebot-adapter-onebot**：OneBot协议适配器
+- **nonebot_plugin_htmlrender**：HTML渲染插件
+- **nonebot_plugin_picstatus**：图片状态插件
+- **nonebot_plugin_apscheduler**：定时任务调度器
+- **tenacity**：网络请求重试库
+- **matplotlib**：数据可视化库
+- **jieba**：中文分词库
+- **requests**：HTTP请求库
+- **openai**：OpenAI API客户端
+- **pandas**：数据处理库
+- **httpx**：现代HTTP客户端
+- **wordcloud**：词云生成库
+- **ascii_magic**：ASCII艺术生成库
+- **PicImageSearch**：图片搜索库
+- **imageio[ffmpeg]**：图像和视频处理库
+- **opencv-python**：计算机视觉库
+- **scipy**：科学计算库
+- **ffmpeg-python**：FFmpeg包装库
+- **pdf2image**：PDF转图像库
+- **colour-science**：色彩科学库
+- **rapidfuzz**：模糊字符串匹配库
 
 ## 🎮 使用方法
 
 ### 图片处理命令
-- **查看可用操作**：`/img`
-- **执行图片操作**：`/img 操作1 参数1 操作2 参数2 ...`
-- **查看操作帮助**：`/img help 操作名`
+- **查看可用操作**：`img`
+- **执行图片操作**：`img 操作1 参数1 操作2 参数2 ...`
+- **查看操作帮助**：`img help 操作名`
 
 ### 画廊管理命令
-- **创建画廊**：`/gall open 画廊名称`
-- **删除画廊**：`/gall close 画廊名称`
-- **上传图片**：`/gall add 画廊名称`（需要附带图片）
-- **删除图片**：`/gall del 图片ID1 图片ID2 ...`
-- **查看图片**：`/gall pick 画廊名称 [数量]`
-- **列出画廊**：`/gall list`
+- **创建画廊**：`gall open 画廊名称`
+- **删除画廊**：`gall close 画廊名称`
+- **上传图片**：`gall add 画廊名称`（需要附带图片）
+- **删除图片**：`gall del 图片ID1 图片ID2 ...`
+- **查看图片**：`gall pick 画廊名称 [数量]`
+- **列出画廊**：`gall list`
 
 ### 示例用法
-1. **缩放图片**：`/img resize 500` - 将图片缩放到长边为500像素
-2. **旋转图片**：`/img rotate 90` - 逆时针旋转90度
-3. **创建画廊**：`/gall open 表情包`
-4. **上传图片**：发送 `/gall add 表情包` 并附带要上传的图片
-5. **查看图片**：`/gall pick 表情包 3` - 从表情包画廊中随机查看3张图片
+1. **缩放图片**：`img resize 500` - 将图片缩放到长边为500像素
+2. **旋转图片**：`img rotate 90` - 逆时针旋转90度
+3. **创建画廊**：`gall open 表情包`
+4. **上传图片**：发送 `gall add 表情包` 并附带要上传的图片
+5. **查看图片**：`gall pick 表情包 3` - 从表情包画廊中随机查看3张图片
 
 ## 📁 插件结构
 
