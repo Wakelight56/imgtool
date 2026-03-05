@@ -23,6 +23,9 @@ import numpy as np
 
 from .gallery import GalleryManager, GalleryMode, GalleryPicRepeatedException
 
+# 导入 playwright
+from playwright.async_api import async_playwright
+
 
 class ImageType(Enum):
     Any         = 1
@@ -439,6 +442,46 @@ class Main(Star):
                 else:
                     raise Exception(f"下载图片失败: {response.status}")
 
+    async def _screenshot_image(self, image_path):
+        """使用 playwright 截图图片"""
+        import uuid
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            # 创建一个简单的 HTML 页面来显示图片
+            html = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }}
+                    img {{ max-width: 90%; max-height: 90%; object-fit: contain; }}
+                </style>
+            </head>
+            <body>
+                <img src="file://{image_path}" />
+            </body>
+            </html>
+            """
+            # 保存临时 HTML 文件
+            temp_html_path = os.path.join(self.data_dir, "temp_image.html")
+            with open(temp_html_path, 'w', encoding='utf-8') as f:
+                f.write(html)
+            # 打开临时 HTML 文件
+            await page.goto(f"file://{temp_html_path}")
+            # 等待图片加载
+            await page.wait_for_load_state('networkidle')
+            # 生成唯一的临时文件名
+            temp_screenshot_path = os.path.join(self.data_dir, f"temp_screenshot_{uuid.uuid4()}.png")
+            # 截图并保存到临时文件
+            await page.screenshot(path=temp_screenshot_path, full_page=True)
+            # 关闭浏览器
+            await browser.close()
+            # 删除临时 HTML 文件
+            if os.path.exists(temp_html_path):
+                os.remove(temp_html_path)
+            return temp_screenshot_path
+
     async def _get_image_from_event(self, event: AstrMessageEvent):
         """从事件中获取图片"""
         images = []
@@ -531,7 +574,7 @@ class Main(Star):
             await self._send_image(event, result)
 
     @filter.command("/img")
-    async def img_command(self, event: AstrMessageEvent):
+    async def img_command(self, event: AstrMessageEvent, *args, **kwargs):
         """图片操作命令
         用法: /img 操作1 参数1 操作2 参数2 ...
         可用的操作: resize, mirror, rotate, gray, invert, brighten, contrast, blur
@@ -547,7 +590,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f"操作失败: {e}")]))
 
     @filter.command("/img help")
-    async def img_help(self, event: AstrMessageEvent):
+    async def img_help(self, event: AstrMessageEvent, *args, **kwargs):
         """查看图片操作帮助"""
         args = event.get_message_str().strip().split()[2:]  # 去掉 /img help
         if not args:
@@ -568,7 +611,7 @@ class Main(Star):
     # ==================== 画廊功能 ====================
 
     @filter.command("/gall open")
-    async def gall_open(self, event: AstrMessageEvent):
+    async def gall_open(self, event: AstrMessageEvent, *args, **kwargs):
         """创建一个新画廊"""
         try:
             args = event.get_message_str().strip().split()[2:]  # 去掉 /gall open
@@ -582,7 +625,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f'创建画廊失败: {e}')]))
 
     @filter.command("/gall close")
-    async def gall_close(self, event: AstrMessageEvent):
+    async def gall_close(self, event: AstrMessageEvent, *args, **kwargs):
         """删除一个画廊"""
         try:
             args = event.get_message_str().strip().split()[2:]  # 去掉 /gall close
@@ -596,7 +639,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f'删除画廊失败: {e}')]))
 
     @filter.command("/gall add")
-    async def gall_add(self, event: AstrMessageEvent):
+    async def gall_add(self, event: AstrMessageEvent, *args, **kwargs):
         """上传图片到画廊"""
         try:
             args = event.get_message_str().strip().split()[2:]  # 去掉 /gall add
@@ -656,7 +699,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f'上传图片失败: {e}')]))
 
     @filter.command("/gall del")
-    async def gall_del(self, event: AstrMessageEvent):
+    async def gall_del(self, event: AstrMessageEvent, *args, **kwargs):
         """删除画廊中的图片"""
         try:
             args = event.get_message_str().strip().split()[2:]  # 去掉 /gall del
@@ -691,7 +734,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f'删除图片失败: {e}')]))
 
     @filter.command("/gall pick")
-    async def gall_pick(self, event: AstrMessageEvent):
+    async def gall_pick(self, event: AstrMessageEvent, *args, **kwargs):
         """查看画廊中的图片"""
         try:
             args = event.get_message_str().strip().split()[2:]  # 去掉 /gall pick
@@ -732,16 +775,22 @@ class Main(Star):
             # 发送图片
             for pic in selected_pics:
                 try:
-                    if os.path.exists(pic.path):
-                        with open(pic.path, 'rb') as f:
-                            await event.send(MessageChain([ImageComponent(f.read())]))
+                    from pathlib import Path
+                    if Path(pic.path).exists():
+                        # 使用 playwright 截图
+                        temp_screenshot_path = await self._screenshot_image(pic.path)
+                        # 发送图片
+                        await event.reply(ImageComponent(temp_screenshot_path))
+                        # 删除临时文件
+                        if os.path.exists(temp_screenshot_path):
+                            os.remove(temp_screenshot_path)
                 except Exception as e:
                     logger.error(f"发送图片失败: {e}")
         except Exception as e:
             await event.send(MessageChain([Plain(f'查看图片失败: {e}')]))
 
     @filter.command("/gall list")
-    async def gall_list(self, event: AstrMessageEvent):
+    async def gall_list(self, event: AstrMessageEvent, *args, **kwargs):
         """列出所有画廊"""
         try:
             galleries = self.gallery_manager.get_all_galls()
@@ -760,7 +809,7 @@ class Main(Star):
             await event.send(MessageChain([Plain(f'列出画廊失败: {e}')]))
 
     @filter.command("/img test")
-    async def img_test(self, event: AstrMessageEvent):
+    async def img_test(self, event: AstrMessageEvent, *args, **kwargs):
         """测试群合并转发消息"""
         try:
             from astrbot.api.message_components import Node, Plain, Image

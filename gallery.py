@@ -1,4 +1,3 @@
-import os
 import shutil
 import json
 import hashlib
@@ -6,6 +5,7 @@ import random
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Dict, Optional, Tuple
+from pathlib import Path
 
 from PIL import Image
 import numpy as np
@@ -74,9 +74,10 @@ class GalleryPic:
     def ensure_thumb(self, thumb_size: Tuple[int, int] = (64, 64), bg_color: Tuple[int, int, int, int] = (230, 240, 255, 255)):
         try:
             if self.thumb_path is None:
-                name = os.path.basename(self.path)
-                self.thumb_path = os.path.join(os.path.dirname(self.path), f"{name}_thumb.jpg")
-            if not os.path.exists(self.thumb_path):
+                path = Path(self.path)
+                name = path.name
+                self.thumb_path = str(path.parent / f"{name}_thumb.jpg")
+            if not Path(self.thumb_path).exists():
                 img = Image.open(self.path).convert('RGBA')
                 img.thumbnail(thumb_size, Image.Resampling.LANCZOS)
                 thumb = Image.new('RGBA', img.size, bg_color)
@@ -111,16 +112,18 @@ class GalleryManager:
         if not isinstance(data_dir, str):
             data_dir = str(data_dir)
         self.data_dir = data_dir
-        self.gallery_dir = os.path.join(self.data_dir, "gallery")
-        if not os.path.exists(self.gallery_dir):
-            os.makedirs(self.gallery_dir, exist_ok=True)
-        self.db_path = os.path.join(self.gallery_dir, "gallery.json")
+        self.gallery_dir = str(Path(self.data_dir) / "gallery")
+        gallery_path = Path(self.gallery_dir)
+        if not gallery_path.exists():
+            gallery_path.mkdir(parents=True, exist_ok=True)
+        self.db_path = str(gallery_path / "gallery.json")
         self.pid_top = 0
         self.galleries: Dict[str, Gallery] = {}
         self._load()
 
     def _load(self):
-        if os.path.exists(self.db_path):
+        db_path = Path(self.db_path)
+        if db_path.exists():
             try:
                 with open(self.db_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
@@ -212,12 +215,13 @@ class GalleryManager:
             name=name,
             aliases=[],
             mode=GalleryMode.Edit,
-            pics_dir=os.path.join(self.gallery_dir, name),
+            pics_dir=str(Path(self.gallery_dir) / name),
             pics=[],
         )
         self.galleries[name] = gall
-        if not os.path.exists(gall.pics_dir):
-            os.makedirs(gall.pics_dir, exist_ok=True)
+        pics_dir = Path(gall.pics_dir)
+        if not pics_dir.exists():
+            pics_dir.mkdir(parents=True, exist_ok=True)
         self._save()
 
     def close_gall(self, name_or_alias: str):
@@ -228,7 +232,8 @@ class GalleryManager:
         assert g is not None, f'画廊"{name_or_alias}"不存在'
         # 删除画廊目录
         try:
-            if os.path.exists(g.pics_dir):
+            pics_dir = Path(g.pics_dir)
+            if pics_dir.exists():
                 shutil.rmtree(g.pics_dir)
         except Exception as e:
             logger.warning(f'删除画廊目录失败: {e}')
@@ -309,14 +314,16 @@ class GalleryManager:
                 raise GalleryPicRepeatedException(sim_pid)
 
         self.pid_top += 1
-        _, ext = os.path.splitext(os.path.basename(img_path))
-        time_str = os.path.basename(img_path).split('_')[0]
+        img_path_obj = Path(img_path)
+        ext = img_path_obj.suffix
+        time_str = img_path_obj.name.split('_')[0]
         if not time_str:
             from datetime import datetime
             time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        dst_path = os.path.join(g.pics_dir, f"{time_str}_{self.pid_top}{ext}")
-        if not os.path.exists(g.pics_dir):
-            os.makedirs(g.pics_dir, exist_ok=True)
+        dst_path = str(Path(g.pics_dir) / f"{time_str}_{self.pid_top}{ext}")
+        pics_dir = Path(g.pics_dir)
+        if not pics_dir.exists():
+            pics_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(img_path, dst_path)
 
         pic.path = dst_path
@@ -357,20 +364,24 @@ class GalleryManager:
 
         # 删除旧文件
         try:
-            if os.path.exists(p.path):
-                os.remove(p.path)
-            if p.thumb_path and os.path.exists(p.thumb_path):
-                os.remove(p.thumb_path)
+            pic_path = Path(p.path)
+            if pic_path.exists():
+                pic_path.unlink()
+            if p.thumb_path:
+                thumb_path = Path(p.thumb_path)
+                if thumb_path.exists():
+                    thumb_path.unlink()
         except Exception as e:
             logger.warning(f'删除画廊图片 {pid} 文件失败: {e}')
 
         # 复制新文件
-        _, ext = os.path.splitext(os.path.basename(img_path))
-        time_str = os.path.basename(img_path).split('_')[0]
+        img_path_obj = Path(img_path)
+        ext = img_path_obj.suffix
+        time_str = img_path_obj.name.split('_')[0]
         if not time_str:
             from datetime import datetime
             time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        dst_path = os.path.join(g.pics_dir, f"{time_str}_{p.pid}{ext}")
+        dst_path = str(Path(g.pics_dir) / f"{time_str}_{p.pid}{ext}")
         shutil.copy2(img_path, dst_path)
 
         # 更新信息
@@ -392,10 +403,13 @@ class GalleryManager:
         g = self.find_gall(p.gall_name)
         g.pics.remove(p)
         try:
-            if os.path.exists(p.path):
-                os.remove(p.path)
-            if p.thumb_path and os.path.exists(p.thumb_path):
-                os.remove(p.thumb_path)
+            pic_path = Path(p.path)
+            if pic_path.exists():
+                pic_path.unlink()
+            if p.thumb_path:
+                thumb_path = Path(p.thumb_path)
+                if thumb_path.exists():
+                    thumb_path.unlink()
         except Exception as e:
             logger.warning(f'删除画廊图片 {pid} 文件失败: {e}')
         self._save()
