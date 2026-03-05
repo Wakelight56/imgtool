@@ -409,7 +409,11 @@ class Main(Star):
         # 初始化插件配置
         self.base_dir = Path(__file__).parent
         # 使用官方推荐的插件数据目录
-        plugin_data_path = get_astrbot_data_path() / "plugin_data" / self.name
+        astrbot_data_path = get_astrbot_data_path()
+        # 确保使用Path对象
+        if isinstance(astrbot_data_path, str):
+            astrbot_data_path = Path(astrbot_data_path)
+        plugin_data_path = astrbot_data_path / "plugin_data" / self.name
         self.data_dir = plugin_data_path
         self.data_dir.mkdir(parents=True, exist_ok=True)
         
