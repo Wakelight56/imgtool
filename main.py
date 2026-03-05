@@ -440,7 +440,7 @@ class Main(Star):
     async def _get_image_from_event(self, event: AstrMessageEvent):
         """从事件中获取图片"""
         images = []
-        for component in event.chain:
+        for component in event.get_messages():
             if isinstance(component, ImageComponent):
                 try:
                     img = await self._download_image(component.url)
@@ -605,7 +605,7 @@ class Main(Star):
             
             # 获取图片
             images = []
-            for component in event.chain:
+            for component in event.get_messages():
                 if isinstance(component, ImageComponent):
                     try:
                         img = await self._download_image(component.url)
