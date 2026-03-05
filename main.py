@@ -405,12 +405,10 @@ class Main(Star):
         super().__init__(context)
         
         # 初始化插件配置
-        self.base_dir = Path(__file__).parent
-        # 确保self.base_dir是一个Path对象
-        if isinstance(self.base_dir, str):
-            self.base_dir = Path(self.base_dir)
-        self.data_dir = self.base_dir / "data"
-        self.data_dir.mkdir(exist_ok=True)
+        self.base_dir = str(Path(__file__).parent)
+        self.data_dir = os.path.join(self.base_dir, "data")
+        if not os.path.exists(self.data_dir):
+            os.makedirs(self.data_dir, exist_ok=True)
         
         # 初始化画廊管理器
         self.gallery_manager = GalleryManager.get(self.data_dir)
