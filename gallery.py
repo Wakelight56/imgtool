@@ -107,7 +107,10 @@ class Gallery:
 class GalleryManager:
     _mgr: 'GalleryManager' = None
 
-    def __init__(self, data_dir: Path):
+    def __init__(self, data_dir):
+        # 确保data_dir是一个Path对象
+        if isinstance(data_dir, str):
+            data_dir = Path(data_dir)
         self.data_dir = data_dir
         self.gallery_dir = self.data_dir / "gallery"
         self.gallery_dir.mkdir(exist_ok=True)
