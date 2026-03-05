@@ -406,6 +406,9 @@ class Main(Star):
         
         # 初始化插件配置
         self.base_dir = Path(__file__).parent
+        # 确保self.base_dir是一个Path对象
+        if isinstance(self.base_dir, str):
+            self.base_dir = Path(self.base_dir)
         self.data_dir = self.base_dir / "data"
         self.data_dir.mkdir(exist_ok=True)
         
