@@ -1,0 +1,9 @@
+name: astrbot_plugin_imgtool
+display_name: 图片工具箱
+desc: 基于LunaBot的图片处理工具，提供多种图片操作功能，如缩放、旋转、滤镜、动图处理等。
+version: 1.0.0
+author: nagatoquin33
+repo: https://github.com/nagatoquin33/astrbot_plugin_imgtool
+astrbot_version: ">=4.10.4"
+support_platforms:
+  - aiocqhttp
