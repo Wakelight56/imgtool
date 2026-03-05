@@ -761,3 +761,20 @@ class Main(Star):
             await event.send(MessageChain([Plain(msg)]))
         except Exception as e:
             await event.send(MessageChain([Plain(f'列出画廊失败: {e}')]))
+
+    @filter.command("/img test")
+    async def img_test(self, event: AstrMessageEvent):
+        """测试群合并转发消息"""
+        try:
+            from astrbot.api.message_components import Node, Plain, Image
+            node = Node(
+                uin=905617992,
+                name="Soulter",
+                content=[
+                    Plain("这是一个群合并转发消息测试"),
+                    Plain("你可以使用这种方式发送群合并转发消息")
+                ]
+            )
+            yield event.chain_result([node])
+        except Exception as e:
+            await event.send(MessageChain([Plain(f'测试失败: {e}')]))
