@@ -3,7 +3,6 @@ import shutil
 import json
 import hashlib
 import random
-from pathlib import Path
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Dict, Optional, Tuple
@@ -108,13 +107,14 @@ class GalleryManager:
     _mgr: 'GalleryManager' = None
 
     def __init__(self, data_dir):
-        # 确保data_dir是一个Path对象
-        if isinstance(data_dir, str):
-            data_dir = Path(data_dir)
+        # 确保data_dir是一个字符串
+        if not isinstance(data_dir, str):
+            data_dir = str(data_dir)
         self.data_dir = data_dir
-        self.gallery_dir = self.data_dir / "gallery"
-        self.gallery_dir.mkdir(exist_ok=True)
-        self.db_path = self.gallery_dir / "gallery.json"
+        self.gallery_dir = os.path.join(self.data_dir, "gallery")
+        if not os.path.exists(self.gallery_dir):
+            os.makedirs(self.gallery_dir, exist_ok=True)
+        self.db_path = os.path.join(self.gallery_dir, "gallery.json")
         self.pid_top = 0
         self.galleries: Dict[str, Gallery] = {}
         self._load()
@@ -212,11 +212,12 @@ class GalleryManager:
             name=name,
             aliases=[],
             mode=GalleryMode.Edit,
-            pics_dir=str(self.gallery_dir / name),
+            pics_dir=os.path.join(self.gallery_dir, name),
             pics=[],
         )
         self.galleries[name] = gall
-        Path(gall.pics_dir).mkdir(exist_ok=True)
+        if not os.path.exists(gall.pics_dir):
+            os.makedirs(gall.pics_dir, exist_ok=True)
         self._save()
 
     def close_gall(self, name_or_alias: str):
@@ -314,7 +315,8 @@ class GalleryManager:
             from datetime import datetime
             time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         dst_path = os.path.join(g.pics_dir, f"{time_str}_{self.pid_top}{ext}")
-        Path(g.pics_dir).mkdir(exist_ok=True)
+        if not os.path.exists(g.pics_dir):
+            os.makedirs(g.pics_dir, exist_ok=True)
         shutil.copy2(img_path, dst_path)
 
         pic.path = dst_path
@@ -411,7 +413,7 @@ class GalleryManager:
         self._save()
 
     @classmethod
-    def get(cls, data_dir: Path) -> 'GalleryManager':
+    def get(cls, data_dir) -> 'GalleryManager':
         if cls._mgr is None:
             cls._mgr = GalleryManager(data_dir)
         return cls._mgr

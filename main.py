@@ -630,7 +630,7 @@ class Main(Star):
                     buffer.seek(0)
                     
                     # 保存到临时文件
-                    temp_path = str(self.data_dir / f"temp_{i}.png")
+                    temp_path = os.path.join(self.data_dir, f"temp_{i}.png")
                     with open(temp_path, 'wb') as f:
                         f.write(buffer.getvalue())
                     
