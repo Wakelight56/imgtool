@@ -120,7 +120,7 @@ class GalleryManager:
         self._load()
 
     def _load(self):
-        if self.db_path.exists():
+        if os.path.exists(self.db_path):
             try:
                 with open(self.db_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
