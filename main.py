@@ -573,14 +573,14 @@ class Main(Star):
         else:
             await self._send_image(event, result)
 
-    @filter.command("/img")
-    async def img_command(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("img")
+    async def img_command(self, event: AstrMessageEvent, args, kwargs):
         """图片操作命令
-        用法: /img 操作1 参数1 操作2 参数2 ...
+        用法: img 操作1 参数1 操作2 参数2 ...
         可用的操作: resize, mirror, rotate, gray, invert, brighten, contrast, blur
         """
         try:
-            args = event.get_message_str().strip().split()[1:]  # 去掉 /img
+            args = event.get_message_str().strip().split()[1:]  # 去掉 img
             if not args:
                 await event.send(MessageChain([Plain(f"请指定操作，可用的操作: {', '.join(ImageOperation.all_ops.keys())}")]))
                 return
@@ -589,12 +589,12 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f"操作失败: {e}")]))
 
-    @filter.command("/img help")
-    async def img_help(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("img help")
+    async def img_help(self, event: AstrMessageEvent, args, kwargs):
         """查看图片操作帮助"""
-        args = event.get_message_str().strip().split()[2:]  # 去掉 /img help
+        args = event.get_message_str().strip().split()[2:]  # 去掉 img help
         if not args:
-            await event.send(MessageChain([Plain(f"可用的操作: {', '.join(ImageOperation.all_ops.keys())}\n使用 /img help 操作名 获取详细帮助")]))
+            await event.send(MessageChain([Plain(f"可用的操作: {', '.join(ImageOperation.all_ops.keys())}\n使用 img help 操作名 获取详细帮助")]))
             return
         
         op_name = args[0]
@@ -610,13 +610,13 @@ class Main(Star):
 
     # ==================== 画廊功能 ====================
 
-    @filter.command("/gall open")
-    async def gall_open(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall open")
+    async def gall_open(self, event: AstrMessageEvent, args, kwargs):
         """创建一个新画廊"""
         try:
-            args = event.get_message_str().strip().split()[2:]  # 去掉 /gall open
+            args = event.get_message_str().strip().split()[2:]  # 去掉 gall open
             if not args:
-                await event.send(MessageChain([Plain("使用方式: /gall open 画廊名称")]))
+                await event.send(MessageChain([Plain("使用方式: gall open 画廊名称")]))
                 return
             name = ' '.join(args)
             self.gallery_manager.open_gall(name)
@@ -624,13 +624,13 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'创建画廊失败: {e}')]))
 
-    @filter.command("/gall close")
-    async def gall_close(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall close")
+    async def gall_close(self, event: AstrMessageEvent, args, kwargs):
         """删除一个画廊"""
         try:
-            args = event.get_message_str().strip().split()[2:]  # 去掉 /gall close
+            args = event.get_message_str().strip().split()[2:]  # 去掉 gall close
             if not args:
-                await event.send(MessageChain([Plain("使用方式: /gall close 画廊名称")]))
+                await event.send(MessageChain([Plain("使用方式: gall close 画廊名称")]))
                 return
             name = ' '.join(args)
             self.gallery_manager.close_gall(name)
@@ -638,13 +638,13 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'删除画廊失败: {e}')]))
 
-    @filter.command("/gall add")
-    async def gall_add(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall add")
+    async def gall_add(self, event: AstrMessageEvent, args, kwargs):
         """上传图片到画廊"""
         try:
-            args = event.get_message_str().strip().split()[2:]  # 去掉 /gall add
+            args = event.get_message_str().strip().split()[2:]  # 去掉 gall add
             if not args:
-                await event.send(MessageChain([Plain("使用方式: /gall add 画廊名称")]))
+                await event.send(MessageChain([Plain("使用方式: gall add 画廊名称")]))
                 return
             name = ' '.join(args)
             
@@ -698,13 +698,13 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'上传图片失败: {e}')]))
 
-    @filter.command("/gall del")
-    async def gall_del(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall del")
+    async def gall_del(self, event: AstrMessageEvent, args, kwargs):
         """删除画廊中的图片"""
         try:
-            args = event.get_message_str().strip().split()[2:]  # 去掉 /gall del
+            args = event.get_message_str().strip().split()[2:]  # 去掉 gall del
             if not args:
-                await event.send(MessageChain([Plain("使用方式: /gall del 图片ID1 图片ID2 ...")]))
+                await event.send(MessageChain([Plain("使用方式: gall del 图片ID1 图片ID2 ...")]))
                 return
             
             pids = []
@@ -733,13 +733,13 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'删除图片失败: {e}')]))
 
-    @filter.command("/gall pick")
-    async def gall_pick(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall pick")
+    async def gall_pick(self, event: AstrMessageEvent, args, kwargs):
         """查看画廊中的图片"""
         try:
-            args = event.get_message_str().strip().split()[2:]  # 去掉 /gall pick
+            args = event.get_message_str().strip().split()[2:]  # 去掉 gall pick
             if not args:
-                await event.send(MessageChain([Plain("使用方式: /gall pick 画廊名称 [数量]")]))
+                await event.send(MessageChain([Plain("使用方式: gall pick 画廊名称 [数量]")]))
                 return
             
             name = args[0]
@@ -789,8 +789,8 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'查看图片失败: {e}')]))
 
-    @filter.command("/gall list")
-    async def gall_list(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("gall list")
+    async def gall_list(self, event: AstrMessageEvent, args, kwargs):
         """列出所有画廊"""
         try:
             galleries = self.gallery_manager.get_all_galls()
@@ -808,8 +808,8 @@ class Main(Star):
         except Exception as e:
             await event.send(MessageChain([Plain(f'列出画廊失败: {e}')]))
 
-    @filter.command("/img test")
-    async def img_test(self, event: AstrMessageEvent, *args, **kwargs):
+    @filter.command("img test")
+    async def img_test(self, event: AstrMessageEvent, args, kwargs):
         """测试群合并转发消息"""
         try:
             from astrbot.api.message_components import Node, Plain, Image
